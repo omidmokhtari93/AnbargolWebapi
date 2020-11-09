@@ -92,11 +92,14 @@
   <ItemGroup>
     <Compile Include="App_Start\WebApiConfig.cs" />
     <Compile Include="Controllers\GetAllMojoodi.cs" />
+    <Compile Include="Controllers\GetControls.cs" />
+    <Compile Include="Controllers\GetGolsByFormat.cs" />
     <Compile Include="Controllers\SearchGol.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
     <Compile Include="Models\Gol.cs" />
+    <Compile Include="Models\MainClasses.cs" />
     <Compile Include="Models\MojoodiKol.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
