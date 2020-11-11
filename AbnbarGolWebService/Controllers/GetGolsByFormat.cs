@@ -15,23 +15,33 @@ namespace AbnbarGolWebService.Controllers
     [EnableCors("*", "*", "get")]
     public class GetGolsByFormatController : ApiController
     {
-        SqlConnection con = new SqlConnection(ConfigurationManager.ConnectionStrings["flower_depot"].ConnectionString);
+        private readonly SqlConnection _con = new SqlConnection(ConfigurationManager.ConnectionStrings["flower_depot"].ConnectionString);
         [Route("api/golbyformat")]
         [HttpGet]
         public IHttpActionResult GetGolByCustomerActionResult(int format)
         {
-            con.Open();
+            _con.Open();
             var gols = new List<Gol>();
-            var cmd = new SqlCommand("SELECT dbo.flower_colors.flow_color, dbo.flower_colortypes.flow_colortype, flower_entry.id, " +
-                                     "dbo.flower_formats.flow_format, dbo.flower_customers.customer_name, dbo.flower_companies.company_name " +
-                                     ", flower_entry.flower_name, flower_entry.flower_code, flower_entry.enter_date " +
-                                     ", flower_entry.comment FROM dbo.flower_entry INNER JOIN " +
-                                     "dbo.flower_colors ON dbo.flower_entry.flower_color = dbo.flower_colors.flowcolor_id INNER JOIN " +
-                                     "dbo.flower_colortypes ON dbo.flower_entry.flower_colortype = dbo.flower_colortypes.colortype_id INNER JOIN " +
-                                     "dbo.flower_formats ON dbo.flower_entry.flower_format = dbo.flower_formats.flowformat_id INNER JOIN " +
-                                     "dbo.flower_customers ON dbo.flower_entry.customer_name = dbo.flower_customers.customer_id INNER JOIN " +
-                                     "dbo.flower_companies ON dbo.flower_entry.company_name = dbo.flower_companies.company_id " +
-                                     "where flower_entry.flower_format = " + format + " ", con);
+            var cmd = new SqlCommand("select flower_colors.flow_color, flower_colortypes.flow_colortype, flower_entry.id, " +
+                                             "flower_formats.flow_format, flower_customers.customer_name, flower_companies.company_name " +
+                                             ", flower_entry.flower_name, flower_entry.flower_code, flower_entry.enter_date " +
+                                             ", flower_entry.comment FROM flower_entry INNER JOIN " +
+                                             "flower_colors ON flower_entry.flower_color = flower_colors.flowcolor_id INNER JOIN " +
+                                             "flower_colortypes ON flower_entry.flower_colortype = flower_colortypes.colortype_id INNER JOIN " +
+                                             "flower_formats ON flower_entry.flower_format = flower_formats.flowformat_id INNER JOIN " +
+                                             "flower_customers ON flower_entry.customer_name = flower_customers.customer_id INNER JOIN " +
+                                             "flower_companies ON flower_entry.company_name = flower_companies.company_id " +
+                                             "where flower_entry.id in (select j.id from(select sum(i.mojoodi) as mojoodi, i.id " +
+                                             "from(select flower_entry.id, sum(new_halfcut.tedad) as mojoodi from " +
+                                             "flower_entry inner join new_halfcut on flower_entry.id = new_halfcut.flowid " +
+                                             "where flower_entry.flower_format = @format group by flower_entry.id union all " +
+                                             "select flower_entry.id, sum(cutted_and_remain.cutted) as mojoodi from flower_entry " +
+                                             "inner join cutted_and_remain on flower_entry.id = cutted_and_remain.flower_id " +
+                                             "where flower_entry.flower_format = @format group by flower_entry.id union all " +
+                                             "select flower_entry.id, SUM(flower_forms_entry.sheetcount) as mojoodi from flower_entry " +
+                                             "inner join flower_forms_entry on flower_entry.id = flower_forms_entry.flower_id " +
+                                             "where flower_entry.flower_format = @format group by flower_entry.id)i group by i.id)j where j.mojoodi > 0)", _con);
+            cmd.Parameters.AddWithValue("@format", format);
             var rd = cmd.ExecuteReader();
             while (rd.Read())
             {
@@ -49,7 +59,7 @@ namespace AbnbarGolWebService.Controllers
                     Comment = rd["comment"].ToString()
                 });
             }
-            con.Close();
+            _con.Close();
             return Json(gols);
         }
 

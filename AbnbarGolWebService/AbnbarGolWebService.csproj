@@ -91,6 +91,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="App_Start\WebApiConfig.cs" />
+    <Compile Include="Controllers\DailyCharge.cs" />
     <Compile Include="Controllers\GetAllMojoodi.cs" />
     <Compile Include="Controllers\GetControls.cs" />
     <Compile Include="Controllers\GetGolsByFormat.cs" />
